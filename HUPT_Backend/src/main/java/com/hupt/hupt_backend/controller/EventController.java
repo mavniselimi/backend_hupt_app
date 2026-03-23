@@ -1,8 +1,9 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.EventCreateRequestDto;
+import com.hupt.hupt_backend.dto.EventResponseDto;
 import com.hupt.hupt_backend.entities.Event;
-import com.hupt.hupt_backend.entities.User;
+import com.hupt.hupt_backend.dto.EventMapper;
 import com.hupt.hupt_backend.security.CustomUserDetails;
 import com.hupt.hupt_backend.services.EventService;
 import com.hupt.hupt_backend.services.UserService;
@@ -27,19 +28,23 @@ public class EventController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Event>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    public ResponseEntity<List<EventResponseDto>> getAllEvents() {
+        return ResponseEntity.ok(
+                EventMapper.toDtoList(eventService.getAllEvents())
+        );
     }
 
     @GetMapping("/{eventId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Event> getEventById(@PathVariable Long eventId) {
-        return ResponseEntity.ok(eventService.getEventById(eventId));
+    public ResponseEntity<EventResponseDto> getEventById(@PathVariable Long eventId) {
+        return ResponseEntity.ok(
+                EventMapper.toDto(eventService.getEventById(eventId))
+        );
     }
 
     @PostMapping
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Event> createEvent(
+    public ResponseEntity<EventResponseDto> createEvent(
             @RequestBody EventCreateRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -52,49 +57,59 @@ public class EventController {
         event.setPictureOfEventUrl(request.getPictureOfEventUrl());
 
         Event created = eventService.createEvent(event, userDetails.getId());
-        return ResponseEntity.ok(created);
+        return ResponseEntity.ok(EventMapper.toDto(created));
     }
 
     @PostMapping("/{eventId}/register/{userId}")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Event> registerUserToEvent(
+    public ResponseEntity<EventResponseDto> registerUserToEvent(
             @PathVariable Long eventId,
             @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(eventService.registerUserToEvent(eventId, userId));
+        return ResponseEntity.ok(
+                EventMapper.toDto(eventService.registerUserToEvent(eventId, userId))
+        );
     }
 
     @DeleteMapping("/{eventId}/register/{userId}")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Event> removeUserFromEvent(
+    public ResponseEntity<EventResponseDto> removeUserFromEvent(
             @PathVariable Long eventId,
             @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(eventService.removeUserFromEvent(eventId, userId));
+        return ResponseEntity.ok(
+                EventMapper.toDto(eventService.removeUserFromEvent(eventId, userId))
+        );
     }
 
     @PostMapping("/{eventId}/register/me")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<Event> registerMeToEvent(
+    public ResponseEntity<EventResponseDto> registerMeToEvent(
             @PathVariable Long eventId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(eventService.registerUserToEvent(eventId, userDetails.getId()));
+        return ResponseEntity.ok(
+                EventMapper.toDto(eventService.registerUserToEvent(eventId, userDetails.getId()))
+        );
     }
 
     @GetMapping("/me/registered")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<List<Event>> getMyRegisteredEvents(
+    public ResponseEntity<List<EventResponseDto>> getMyRegisteredEvents(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(eventService.getRegisteredEventsOfUser(userDetails.getId()));
+        return ResponseEntity.ok(
+                EventMapper.toDtoList(eventService.getRegisteredEventsOfUser(userDetails.getId()))
+        );
     }
 
     @GetMapping("/me/created")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<List<Event>> getMyCreatedEvents(
+    public ResponseEntity<List<EventResponseDto>> getMyCreatedEvents(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(eventService.getEventsCreatedByUser(userDetails.getId()));
+        return ResponseEntity.ok(
+                EventMapper.toDtoList(eventService.getEventsCreatedByUser(userDetails.getId()))
+        );
     }
 }

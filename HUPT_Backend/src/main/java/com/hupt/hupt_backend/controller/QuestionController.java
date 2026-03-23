@@ -1,7 +1,9 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.QuestionAskRequestDto;
+import com.hupt.hupt_backend.dto.QuestionResponseDto;
 import com.hupt.hupt_backend.entities.Question;
+import com.hupt.hupt_backend.dto.QuestionMapper;
 import com.hupt.hupt_backend.security.CustomUserDetails;
 import com.hupt.hupt_backend.services.QuestionService;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,7 @@ public class QuestionController {
 
     @PostMapping("/session/{sessionId}")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<Question> askQuestion(
+    public ResponseEntity<QuestionResponseDto> askQuestion(
             @PathVariable Long sessionId,
             @RequestBody QuestionAskRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -34,30 +36,30 @@ public class QuestionController {
                 request.getContent(),
                 request.getAnonymous()
         );
-        return ResponseEntity.ok(question);
+        return ResponseEntity.ok(QuestionMapper.toDto(question));
     }
 
     @GetMapping("/session/{sessionId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Question>> getQuestionsBySession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(questionService.getQuestionsBySession(sessionId));
+    public ResponseEntity<List<QuestionResponseDto>> getQuestionsBySession(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                QuestionMapper.toDtoList(questionService.getQuestionsBySession(sessionId))
+        );
     }
 
     @GetMapping("/session/{sessionId}/approved")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Question>> getApprovedQuestionsBySession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(questionService.getApprovedQuestionsBySession(sessionId));
-    }
-
-    @GetMapping("/session/{sessionId}/unanswered")
-    @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<List<Question>> getUnansweredQuestionsBySession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(questionService.getUnansweredQuestionsBySession(sessionId));
+    public ResponseEntity<List<QuestionResponseDto>> getApprovedQuestionsBySession(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                QuestionMapper.toDtoList(questionService.getApprovedQuestionsBySession(sessionId))
+        );
     }
 
     @PatchMapping("/{questionId}/approve")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Question> approveQuestion(@PathVariable Long questionId) {
-        return ResponseEntity.ok(questionService.approveQuestion(questionId));
+    public ResponseEntity<QuestionResponseDto> approveQuestion(@PathVariable Long questionId) {
+        return ResponseEntity.ok(
+                QuestionMapper.toDto(questionService.approveQuestion(questionId))
+        );
     }
 }

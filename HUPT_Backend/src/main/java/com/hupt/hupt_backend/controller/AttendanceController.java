@@ -1,7 +1,11 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.AttendanceSubmitRequestDto;
+import com.hupt.hupt_backend.dto.AttendanceResponseDto;
+import com.hupt.hupt_backend.dto.SessionAttendanceCountResponseDto;
+import com.hupt.hupt_backend.dto.UserAttendanceCountResponseDto;
 import com.hupt.hupt_backend.entities.Attendance;
+import com.hupt.hupt_backend.dto.AttendanceMapper;
 import com.hupt.hupt_backend.security.CustomUserDetails;
 import com.hupt.hupt_backend.services.AttendanceService;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +14,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/attendance")
@@ -24,7 +27,7 @@ public class AttendanceController {
 
     @PostMapping("/submit")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<Attendance> submitAttendance(
+    public ResponseEntity<AttendanceResponseDto> submitAttendance(
             @RequestBody AttendanceSubmitRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
@@ -33,36 +36,44 @@ public class AttendanceController {
                 request.getSessionId(),
                 request.getQrKey()
         );
-        return ResponseEntity.ok(attendance);
+        return ResponseEntity.ok(AttendanceMapper.toDto(attendance));
     }
 
     @GetMapping("/session/{sessionId}")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<List<Attendance>> getAttendanceBySession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(attendanceService.getAttendancesBySession(sessionId));
+    public ResponseEntity<List<AttendanceResponseDto>> getAttendanceBySession(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                AttendanceMapper.toDtoList(attendanceService.getAttendancesBySession(sessionId))
+        );
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<List<Attendance>> getMyAttendances(
+    public ResponseEntity<List<AttendanceResponseDto>> getMyAttendances(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(attendanceService.getAttendancesByUser(userDetails.getId()));
+        return ResponseEntity.ok(
+                AttendanceMapper.toDtoList(attendanceService.getAttendancesByUser(userDetails.getId()))
+        );
     }
 
     @GetMapping("/session/{sessionId}/count")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Map<String, Long>> countAttendanceBySession(@PathVariable Long sessionId) {
-        long count = attendanceService.countAttendanceBySession(sessionId);
-        return ResponseEntity.ok(Map.of("sessionId", sessionId, "count", count));
+    public ResponseEntity<SessionAttendanceCountResponseDto> countAttendanceBySession(@PathVariable Long sessionId) {
+        SessionAttendanceCountResponseDto dto = new SessionAttendanceCountResponseDto();
+        dto.setSessionId(sessionId);
+        dto.setCount(attendanceService.countAttendanceBySession(sessionId));
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/me/count")
     @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<Map<String, Long>> countMyAttendance(
+    public ResponseEntity<UserAttendanceCountResponseDto> countMyAttendance(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        long count = attendanceService.countAttendanceByUser(userDetails.getId());
-        return ResponseEntity.ok(Map.of("userId", userDetails.getId(), "count", count));
+        UserAttendanceCountResponseDto dto = new UserAttendanceCountResponseDto();
+        dto.setUserId(userDetails.getId());
+        dto.setCount(attendanceService.countAttendanceByUser(userDetails.getId()));
+        return ResponseEntity.ok(dto);
     }
 }

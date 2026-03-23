@@ -1,7 +1,9 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.SessionCreateRequestDto;
+import com.hupt.hupt_backend.dto.SessionResponseDto;
 import com.hupt.hupt_backend.entities.Session;
+import com.hupt.hupt_backend.dto.SessionMapper;
 import com.hupt.hupt_backend.services.SessionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +23,7 @@ public class SessionController {
 
     @PostMapping("/event/{eventId}")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> createSession(
+    public ResponseEntity<SessionResponseDto> createSession(
             @PathVariable Long eventId,
             @RequestBody SessionCreateRequestDto request
     ) {
@@ -32,54 +34,72 @@ public class SessionController {
         session.setStartTime(request.getStartTime());
         session.setEndTime(request.getEndTime());
 
-        return ResponseEntity.ok(sessionService.createSession(eventId, session));
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.createSession(eventId, session))
+        );
     }
 
     @GetMapping("/{sessionId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Session> getSessionById(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.getSessionById(sessionId));
+    public ResponseEntity<SessionResponseDto> getSessionById(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.getSessionById(sessionId))
+        );
     }
 
     @GetMapping("/event/{eventId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Session>> getSessionsByEvent(@PathVariable Long eventId) {
-        return ResponseEntity.ok(sessionService.getSessionsByEventId(eventId));
+    public ResponseEntity<List<SessionResponseDto>> getSessionsByEvent(@PathVariable Long eventId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDtoList(sessionService.getSessionsByEventId(eventId))
+        );
     }
 
     @GetMapping("/active")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<Session>> getActiveSessions() {
-        return ResponseEntity.ok(sessionService.getActiveSessions());
+    public ResponseEntity<List<SessionResponseDto>> getActiveSessions() {
+        return ResponseEntity.ok(
+                SessionMapper.toDtoList(sessionService.getActiveSessions())
+        );
     }
 
     @PatchMapping("/{sessionId}/activate")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> activateSession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.activateSession(sessionId));
+    public ResponseEntity<SessionResponseDto> activateSession(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.activateSession(sessionId))
+        );
     }
 
     @PatchMapping("/{sessionId}/deactivate")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> deactivateSession(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.deactivateSession(sessionId));
+    public ResponseEntity<SessionResponseDto> deactivateSession(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.deactivateSession(sessionId))
+        );
     }
 
     @PatchMapping("/{sessionId}/attendance/enable")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> enableAttendance(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.enableAttendance(sessionId));
+    public ResponseEntity<SessionResponseDto> enableAttendance(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.enableAttendance(sessionId))
+        );
     }
 
     @PatchMapping("/{sessionId}/attendance/disable")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> disableAttendance(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.disableAttendance(sessionId));
+    public ResponseEntity<SessionResponseDto> disableAttendance(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.disableAttendance(sessionId))
+        );
     }
 
     @PatchMapping("/{sessionId}/qr/regenerate")
     @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<Session> regenerateQrKey(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.regenerateQrKey(sessionId));
+    public ResponseEntity<SessionResponseDto> regenerateQrKey(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDto(sessionService.regenerateQrKey(sessionId))
+        );
     }
 }
