@@ -2,6 +2,7 @@ package com.hupt.hupt_backend.services;
 
 import com.hupt.hupt_backend.entities.Event;
 import com.hupt.hupt_backend.entities.Session;
+import com.hupt.hupt_backend.entities.User;
 import com.hupt.hupt_backend.repositories.EventRepository;
 import com.hupt.hupt_backend.repositories.SessionRepository;
 import org.springframework.stereotype.Service;
@@ -14,10 +15,12 @@ public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final EventRepository eventRepository;
+    private final NotificationService notificationService;
 
-    public SessionService(SessionRepository sessionRepository, EventRepository eventRepository) {
+    public SessionService(SessionRepository sessionRepository, EventRepository eventRepository, NotificationService notificationService) {
         this.sessionRepository = sessionRepository;
         this.eventRepository = eventRepository;
+        this.notificationService = notificationService;
     }
 
     public Session createSession(Long eventId, Session session) {
@@ -57,8 +60,27 @@ public class SessionService {
     public Session activateSession(Long sessionId) {
         Session session = getSessionById(sessionId);
         session.setActive(true);
-        return sessionRepository.save(session);
+        Session saved = sessionRepository.save(session);
+
+        Event event = saved.getEvent();
+        if (event != null && event.getRegisteredUsers() != null) {
+            for (User user : event.getRegisteredUsers()) {
+                try {
+                    notificationService.sendSessionStartedToUser(
+                            user.getId(),
+                            event.getId(),
+                            saved.getId(),
+                            saved.getTitle()
+                    );
+                } catch (Exception e) {
+                    System.out.println("Notification failed for user " + user.getId() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        return saved;
     }
+
 
     public Session deactivateSession(Long sessionId) {
         Session session = getSessionById(sessionId);

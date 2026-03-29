@@ -14,11 +14,11 @@ public class SessionMapper {
         dto.setStartTime(session.getStartTime());
         dto.setEndTime(session.getEndTime());
         dto.setAttendanceEnabled(session.getAttendanceEnabled());
-        dto.setActive(session.getIsActive());
+        dto.setActive(session.getActive());
 
         if (session.getEvent() != null) {
             dto.setEventId(session.getEvent().getId());
-            dto.setEventTitle(session.getEvent().getTitle());
+            dto.setTitle(session.getEvent().getTitle());
         }
 
         dto.setQuestionCount(session.getQuestions() != null ? session.getQuestions().size() : 0);

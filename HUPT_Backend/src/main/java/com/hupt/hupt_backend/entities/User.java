@@ -36,6 +36,9 @@ public class User {
     @OneToMany(mappedBy = "askedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeviceToken> deviceTokens = new ArrayList<>();
+
     @PrePersist
     public void prePersist(){
         createdAt = LocalDateTime.now();
@@ -111,5 +114,13 @@ public class User {
 
     public void setQuestions(List<Question> questions) {
         this.questions = questions;
+    }
+
+    public List<DeviceToken> getDeviceTokens() {
+        return deviceTokens;
+    }
+
+    public void setDeviceTokens(List<DeviceToken> deviceTokens) {
+        this.deviceTokens = deviceTokens;
     }
 }

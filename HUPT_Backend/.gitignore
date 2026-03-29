@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 🔥 Node
+node_modules/
+
+# 🔥 Firebase (ÇOK KRİTİK)
+firebase-service-account.json
+
+# 🔥 Logs
+*.log
+
+# 🔥 Mac
+.DS_Store
