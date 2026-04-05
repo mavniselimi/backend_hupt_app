@@ -8,6 +8,7 @@ import com.hupt.hupt_backend.repositories.SessionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -102,8 +103,20 @@ public class SessionService {
 
     public Session regenerateQrKey(Long sessionId) {
         Session session = getSessionById(sessionId);
-        session.setQrKey(UUID.randomUUID().toString());
+        //session.setQrKey(UUID.randomUUID().toString());
+        session.setQrKey(generateAttendanceCode());
         return sessionRepository.save(session);
+    }
+
+
+    private String generateAttendanceCode() {
+        String chars = "AFKNTZİHKTBSY";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     public Session getSessionByQrKey(String qrKey) {

@@ -1,6 +1,7 @@
 package com.hupt.hupt_backend.services;
 
 import com.hupt.hupt_backend.entities.Attendance;
+import com.hupt.hupt_backend.entities.Event;
 import com.hupt.hupt_backend.entities.Session;
 import com.hupt.hupt_backend.entities.User;
 import com.hupt.hupt_backend.repositories.AttendanceRepository;
@@ -50,6 +51,11 @@ public class AttendanceService {
         boolean alreadyExists = attendanceRepository.existsByUserAndSession(user, session);
         if (alreadyExists) {
             throw new RuntimeException("Attendance already submitted");
+        }
+        Event event = session.getEvent();
+
+        if (!event.getRegisteredUsers().contains(user)) {
+            throw new RuntimeException("User is not registered for this event");
         }
 
         Attendance attendance = new Attendance();
