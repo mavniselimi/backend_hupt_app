@@ -51,32 +51,6 @@ public class EventService {
     public List<Event> getRegisteredEventsOfUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return eventRepository.findByRegisteredUsersContaining(user);
-    }
-
-    public Event registerUserToEvent(Long eventId, Long userId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!event.getRegisteredUsers().contains(user)) {
-            event.getRegisteredUsers().add(user);
-        }
-
-        return eventRepository.save(event);
-    }
-
-    public Event removeUserFromEvent(Long eventId, Long userId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        event.getRegisteredUsers().remove(user);
-
-        return eventRepository.save(event);
+        return eventRepository.findByRegisteredUser(user);
     }
 }

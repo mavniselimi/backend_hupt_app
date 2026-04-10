@@ -5,6 +5,7 @@ import com.hupt.hupt_backend.entities.Event;
 import com.hupt.hupt_backend.entities.Session;
 import com.hupt.hupt_backend.entities.User;
 import com.hupt.hupt_backend.repositories.AttendanceRepository;
+import com.hupt.hupt_backend.repositories.EventRegistrationRepository;
 import com.hupt.hupt_backend.repositories.SessionRepository;
 import com.hupt.hupt_backend.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,15 +19,18 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
+    private final EventRegistrationRepository eventRegistrationRepository;
 
     public AttendanceService(
             AttendanceRepository attendanceRepository,
             UserRepository userRepository,
-            SessionRepository sessionRepository
+            SessionRepository sessionRepository,
+            EventRegistrationRepository eventRegistrationRepository
     ) {
         this.attendanceRepository = attendanceRepository;
         this.userRepository = userRepository;
         this.sessionRepository = sessionRepository;
+        this.eventRegistrationRepository = eventRegistrationRepository;
     }
 
     public Attendance markAttendanceWithQr(Long userId, Long sessionId, String qrKey) {
@@ -54,7 +58,7 @@ public class AttendanceService {
         }
         Event event = session.getEvent();
 
-        if (!event.getRegisteredUsers().contains(user)) {
+        if (!eventRegistrationRepository.existsByEventAndUser(event, user)) {
             throw new RuntimeException("User is not registered for this event");
         }
 

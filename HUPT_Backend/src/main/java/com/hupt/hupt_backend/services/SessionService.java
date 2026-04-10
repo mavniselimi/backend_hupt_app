@@ -1,6 +1,7 @@
 package com.hupt.hupt_backend.services;
 
 import com.hupt.hupt_backend.entities.Event;
+import com.hupt.hupt_backend.entities.EventRegistration;
 import com.hupt.hupt_backend.entities.Session;
 import com.hupt.hupt_backend.entities.User;
 import com.hupt.hupt_backend.repositories.EventRepository;
@@ -64,8 +65,9 @@ public class SessionService {
         Session saved = sessionRepository.save(session);
 
         Event event = saved.getEvent();
-        if (event != null && event.getRegisteredUsers() != null) {
-            for (User user : event.getRegisteredUsers()) {
+        if (event != null && event.getRegistrations() != null) {
+            for (EventRegistration registration : event.getRegistrations()) {
+                User user = registration.getUser();
                 try {
                     notificationService.sendSessionStartedToUser(
                             user.getId(),

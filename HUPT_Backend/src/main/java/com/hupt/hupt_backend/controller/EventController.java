@@ -1,12 +1,14 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.EventCreateRequestDto;
+import com.hupt.hupt_backend.dto.EventMapper;
+import com.hupt.hupt_backend.dto.EventRegistrationMapper;
+import com.hupt.hupt_backend.dto.EventRegistrationResponseDto;
 import com.hupt.hupt_backend.dto.EventResponseDto;
 import com.hupt.hupt_backend.entities.Event;
-import com.hupt.hupt_backend.dto.EventMapper;
 import com.hupt.hupt_backend.security.CustomUserDetails;
+import com.hupt.hupt_backend.services.EventRegistrationService;
 import com.hupt.hupt_backend.services.EventService;
-import com.hupt.hupt_backend.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,11 +21,11 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
-    private final UserService userService;
+    private final EventRegistrationService registrationService;
 
-    public EventController(EventService eventService, UserService userService) {
+    public EventController(EventService eventService, EventRegistrationService registrationService) {
         this.eventService = eventService;
-        this.userService = userService;
+        this.registrationService = registrationService;
     }
 
     @GetMapping
@@ -60,49 +62,6 @@ public class EventController {
         return ResponseEntity.ok(EventMapper.toDto(created));
     }
 
-    @PostMapping("/{eventId}/register/{userId}")
-    @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<EventResponseDto> registerUserToEvent(
-            @PathVariable Long eventId,
-            @PathVariable Long userId
-    ) {
-        return ResponseEntity.ok(
-                EventMapper.toDto(eventService.registerUserToEvent(eventId, userId))
-        );
-    }
-
-    @DeleteMapping("/{eventId}/register/{userId}")
-    @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<EventResponseDto> removeUserFromEvent(
-            @PathVariable Long eventId,
-            @PathVariable Long userId
-    ) {
-        return ResponseEntity.ok(
-                EventMapper.toDto(eventService.removeUserFromEvent(eventId, userId))
-        );
-    }
-
-    @PostMapping("/{eventId}/register/me")
-    @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<EventResponseDto> registerMeToEvent(
-            @PathVariable Long eventId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return ResponseEntity.ok(
-                EventMapper.toDto(eventService.registerUserToEvent(eventId, userDetails.getId()))
-        );
-    }
-
-    @GetMapping("/me/registered")
-    @PreAuthorize("hasAnyRole('Admin','User')")
-    public ResponseEntity<List<EventResponseDto>> getMyRegisteredEvents(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        return ResponseEntity.ok(
-                EventMapper.toDtoList(eventService.getRegisteredEventsOfUser(userDetails.getId()))
-        );
-    }
-
     @GetMapping("/me/created")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<List<EventResponseDto>> getMyCreatedEvents(
@@ -110,6 +69,22 @@ public class EventController {
     ) {
         return ResponseEntity.ok(
                 EventMapper.toDtoList(eventService.getEventsCreatedByUser(userDetails.getId()))
+        );
+    }
+
+    /**
+     * Get all events the current user has registered for, with queue + card status.
+     * Replaces the old /me/registered endpoint.
+     */
+    @GetMapping("/me/registered")
+    @PreAuthorize("hasAnyRole('Admin','User','Registrar')")
+    public ResponseEntity<List<EventRegistrationResponseDto>> getMyRegisteredEvents(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(
+                EventRegistrationMapper.toDtoList(
+                        registrationService.getRegistrationsForUser(userDetails.getId())
+                )
         );
     }
 }

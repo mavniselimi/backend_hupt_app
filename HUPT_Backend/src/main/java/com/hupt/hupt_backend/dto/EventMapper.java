@@ -22,7 +22,7 @@ public class EventMapper {
         }
 
         dto.setSessionCount(event.getSessions() != null ? event.getSessions().size() : 0);
-        dto.setRegisteredUserCount(event.getRegisteredUsers() != null ? event.getRegisteredUsers().size() : 0);
+        dto.setRegisteredUserCount(event.getRegistrations() != null ? event.getRegistrations().size() : 0);
         return dto;
     }
 

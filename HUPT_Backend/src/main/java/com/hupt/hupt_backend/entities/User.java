@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+// EventRegistration is in the same package
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -30,8 +32,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attendance> attendances = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "registeredUsers")
-    private List<Event> registeredEvents = new ArrayList<>();
+    // Registrations to events (replaces old ManyToMany registeredEvents)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventRegistration> eventRegistrations = new ArrayList<>();
 
     @OneToMany(mappedBy = "askedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
@@ -100,12 +103,12 @@ public class User {
         this.attendances = attendances;
     }
 
-    public List<Event> getRegisteredEvents() {
-        return registeredEvents;
+    public List<EventRegistration> getEventRegistrations() {
+        return eventRegistrations;
     }
 
-    public void setRegisteredEvents(List<Event> registeredEvents) {
-        this.registeredEvents = registeredEvents;
+    public void setEventRegistrations(List<EventRegistration> eventRegistrations) {
+        this.eventRegistrations = eventRegistrations;
     }
 
     public List<Question> getQuestions() {
