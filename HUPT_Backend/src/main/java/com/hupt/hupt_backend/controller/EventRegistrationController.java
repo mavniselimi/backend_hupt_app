@@ -131,7 +131,7 @@ public class EventRegistrationController {
             @PathVariable Long registrationId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        EventRegistration updated = registrationService.issueCard(registrationId, userDetails.getId());
+        EventRegistration updated = registrationService.issueCard(eventId, registrationId, userDetails.getId());
         return ResponseEntity.ok(EventRegistrationMapper.toDto(updated));
     }
 

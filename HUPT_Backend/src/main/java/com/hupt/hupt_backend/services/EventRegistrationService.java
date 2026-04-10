@@ -29,11 +29,15 @@ public class EventRegistrationService {
     /**
      * Register a user for an event.
      * Assigns the next queue number automatically.
+     * Uses a pessimistic write lock on the event row to serialize concurrent registrations,
+     * preventing two users from getting the same queue number.
+     * The unique constraint on (event_id, queue_number) acts as a DB-level safety net.
      * Throws if the user is already registered.
      */
     @Transactional
     public EventRegistration registerUser(Long eventId, Long userId) {
-        Event event = eventRepository.findById(eventId)
+        // Pessimistic lock: all concurrent registrations for the same event wait here
+        Event event = eventRepository.findByIdForUpdate(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
 
         User user = userRepository.findById(userId)
@@ -102,12 +106,18 @@ public class EventRegistrationService {
     /**
      * Mark a registration as CARD_ISSUED.
      * Records which registrar processed it and the timestamp.
+     * Validates that the registration actually belongs to the given event (prevents cross-event abuse).
      * Only Registrar or Admin should be allowed to call this.
      */
     @Transactional
-    public EventRegistration issueCard(Long registrationId, Long registrarUserId) {
+    public EventRegistration issueCard(Long eventId, Long registrationId, Long registrarUserId) {
         EventRegistration registration = registrationRepository.findById(registrationId)
                 .orElseThrow(() -> new RuntimeException("Registration not found with id: " + registrationId));
+
+        // Security check: the registration must belong to the event in the URL path
+        if (!registration.getEvent().getId().equals(eventId)) {
+            throw new RuntimeException("Registration " + registrationId + " does not belong to event " + eventId);
+        }
 
         if (registration.getStatus() == EventRegistrationStatus.CARD_ISSUED) {
             throw new RuntimeException("Card has already been issued for this registration");

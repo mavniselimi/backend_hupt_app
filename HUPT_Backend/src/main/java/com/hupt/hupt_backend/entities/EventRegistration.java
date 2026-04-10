@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 @Table(
         name = "event_registrations",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"event_id", "user_id"})
+                @UniqueConstraint(columnNames = {"event_id", "user_id"}),
+                // Safety net: even if the pessimistic lock somehow fails, the DB will reject duplicate queue numbers
+                @UniqueConstraint(columnNames = {"event_id", "queue_number"})
         }
 )
 public class EventRegistration {
