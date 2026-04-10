@@ -32,9 +32,19 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Session> sessions = new ArrayList<>();
 
-    // Replaced ManyToMany with a proper entity so we can track queue + card status
+    // Replaced the old simple ManyToMany with a proper entity to track queue + card status
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventRegistration> registrations = new ArrayList<>();
+
+    // Registrars (desks) assigned to manage physical registration for this event
+    // Admin assigns these; only active ones receive new incoming registrations
+    @ManyToMany
+    @JoinTable(
+            name = "event_registrar_assignments",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "registrar_id")
+    )
+    private List<User> assignedRegistrars = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
@@ -72,6 +82,9 @@ public class Event {
 
     public List<EventRegistration> getRegistrations() { return registrations; }
     public void setRegistrations(List<EventRegistration> registrations) { this.registrations = registrations; }
+
+    public List<User> getAssignedRegistrars() { return assignedRegistrars; }
+    public void setAssignedRegistrars(List<User> assignedRegistrars) { this.assignedRegistrars = assignedRegistrars; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

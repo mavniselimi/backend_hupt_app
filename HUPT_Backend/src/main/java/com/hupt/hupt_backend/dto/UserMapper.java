@@ -9,6 +9,7 @@ public class UserMapper {
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole().name());
+        dto.setIsActive(user.getIsActive());
         return dto;
     }
 }

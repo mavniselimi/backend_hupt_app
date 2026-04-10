@@ -13,21 +13,38 @@ import java.util.Optional;
 
 public interface EventRegistrationRepository extends JpaRepository<EventRegistration, Long> {
 
-    List<EventRegistration> findByEventOrderByQueueNumberAsc(Event event);
+    // ── Full event queue (all desks, ordered by desk then queue position) ─────────
+    List<EventRegistration> findByEventOrderByAssignedRegistrarIdAscQueueNumberAsc(Event event);
 
-    List<EventRegistration> findByEventAndStatusOrderByQueueNumberAsc(Event event, EventRegistrationStatus status);
+    // ── Single desk queue ─────────────────────────────────────────────────────────
+    List<EventRegistration> findByEventAndAssignedRegistrarOrderByQueueNumberAsc(Event event, User registrar);
 
+    List<EventRegistration> findByEventAndAssignedRegistrarAndStatusOrderByQueueNumberAsc(
+            Event event, User registrar, EventRegistrationStatus status);
+
+    // ── Existence checks ──────────────────────────────────────────────────────────
     Optional<EventRegistration> findByEventAndUser(Event event, User user);
 
     boolean existsByEventAndUser(Event event, User user);
 
-    // Get the highest queue number for this event so we can assign the next one
-    @Query("SELECT COALESCE(MAX(r.queueNumber), 0) FROM EventRegistration r WHERE r.event = :event")
-    int findMaxQueueNumberByEvent(@Param("event") Event event);
+    // ── Per-desk queue number assignment ─────────────────────────────────────────
+    // Max queue number for a specific registrar within a specific event
+    // Used to assign the next queue number when a new user is routed to this desk
+    @Query("SELECT COALESCE(MAX(r.queueNumber), 0) FROM EventRegistration r " +
+           "WHERE r.event = :event AND r.assignedRegistrar = :registrar")
+    int findMaxQueueNumberByEventAndRegistrar(@Param("event") Event event,
+                                              @Param("registrar") User registrar);
 
-    // All events a user is registered for
+    // ── Load-balancing: count PENDING registrations per active registrar ──────────
+    // Returns [registrarId, pendingCount] pairs for all active registrars of this event
+    // The service uses this to pick the least-loaded desk
+    @Query("SELECT r.assignedRegistrar.id, COUNT(r) FROM EventRegistration r " +
+           "WHERE r.event = :event AND r.status = 'PENDING' " +
+           "GROUP BY r.assignedRegistrar.id")
+    List<Object[]> countPendingPerRegistrarForEvent(@Param("event") Event event);
+
+    // ── User's own registrations ──────────────────────────────────────────────────
     List<EventRegistration> findByUser(User user);
 
-    // All events a user registered (by status)
     List<EventRegistration> findByUserAndStatus(User user, EventRegistrationStatus status);
 }

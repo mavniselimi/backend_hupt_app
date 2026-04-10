@@ -5,15 +5,29 @@ import java.time.LocalDateTime;
 public class EventRegistrationResponseDto {
 
     private Long id;
+
+    // Event info
     private Long eventId;
     private String eventTitle;
+
+    // Registered user
     private Long userId;
     private String userName;
     private String userEmail;
-    private Integer queueNumber;
-    private String status;           // PENDING / CARD_ISSUED
-    private Long processedById;      // null until card issued
-    private String processedByName;  // null until card issued
+
+    // Desk routing — the key info the frontend needs to say "Go to desk X, queue #Y"
+    private Long assignedRegistrarId;
+    private String assignedRegistrarName;   // Use registrar's name as the desk label (e.g. "Desk A", "Masa 1")
+    private Integer queueNumber;            // Position in that desk's own queue (not global)
+
+    // Status
+    private String status;                  // PENDING / CARD_ISSUED
+
+    // Who actually issued the card (set when CARD_ISSUED, usually == assignedRegistrar)
+    private Long processedById;
+    private String processedByName;
+
+    // Timestamps
     private LocalDateTime registeredAt;
     private LocalDateTime cardIssuedAt;
 
@@ -34,6 +48,12 @@ public class EventRegistrationResponseDto {
 
     public String getUserEmail() { return userEmail; }
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
+
+    public Long getAssignedRegistrarId() { return assignedRegistrarId; }
+    public void setAssignedRegistrarId(Long assignedRegistrarId) { this.assignedRegistrarId = assignedRegistrarId; }
+
+    public String getAssignedRegistrarName() { return assignedRegistrarName; }
+    public void setAssignedRegistrarName(String assignedRegistrarName) { this.assignedRegistrarName = assignedRegistrarName; }
 
     public Integer getQueueNumber() { return queueNumber; }
     public void setQueueNumber(Integer queueNumber) { this.queueNumber = queueNumber; }

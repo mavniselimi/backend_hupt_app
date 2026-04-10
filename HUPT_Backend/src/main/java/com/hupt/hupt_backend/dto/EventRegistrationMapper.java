@@ -25,6 +25,12 @@ public class EventRegistrationMapper {
             dto.setUserEmail(reg.getUser().getEmail());
         }
 
+        // Desk routing info — the frontend reads assignedRegistrarName as the desk label
+        if (reg.getAssignedRegistrar() != null) {
+            dto.setAssignedRegistrarId(reg.getAssignedRegistrar().getId());
+            dto.setAssignedRegistrarName(reg.getAssignedRegistrar().getName());
+        }
+
         if (reg.getProcessedBy() != null) {
             dto.setProcessedById(reg.getProcessedBy().getId());
             dto.setProcessedByName(reg.getProcessedBy().getName());

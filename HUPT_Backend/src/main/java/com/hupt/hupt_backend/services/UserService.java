@@ -1,6 +1,7 @@
 package com.hupt.hupt_backend.services;
 
 import com.hupt.hupt_backend.entities.User;
+import com.hupt.hupt_backend.entities.UserType;
 import com.hupt.hupt_backend.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -34,5 +35,23 @@ public class UserService {
             throw new RuntimeException("Email already exists");
         }
         return userRepository.save(user);
+    }
+
+    /**
+     * Toggle the isActive flag of a user (used for Registrar desks).
+     * When set to false, no new registrations will be routed to this desk.
+     * Existing registrations are not affected.
+     */
+    public User setActive(Long userId, boolean active) {
+        User user = getUserById(userId);
+        user.setIsActive(active);
+        return userRepository.save(user);
+    }
+
+    /**
+     * Get all users with the Registrar role.
+     */
+    public List<User> getAllRegistrars() {
+        return userRepository.findByRole(UserType.Registrar);
     }
 }

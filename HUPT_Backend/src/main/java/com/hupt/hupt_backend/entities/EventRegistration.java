@@ -8,9 +8,10 @@ import java.time.LocalDateTime;
 @Table(
         name = "event_registrations",
         uniqueConstraints = {
+                // A user can only register once per event
                 @UniqueConstraint(columnNames = {"event_id", "user_id"}),
-                // Safety net: even if the pessimistic lock somehow fails, the DB will reject duplicate queue numbers
-                @UniqueConstraint(columnNames = {"event_id", "queue_number"})
+                // Safety net for concurrency: no two users can get the same queue number at the same desk
+                @UniqueConstraint(columnNames = {"event_id", "assigned_registrar_id", "queue_number"})
         }
 )
 public class EventRegistration {
@@ -27,13 +28,21 @@ public class EventRegistration {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // Sequential number per event (1, 2, 3...) — the physical queue order
+    // The desk / registrar this user was routed to during registration
+    // Assigned automatically by the load-balancing logic (least-loaded active desk)
+    @ManyToOne
+    @JoinColumn(name = "assigned_registrar_id")
+    private User assignedRegistrar;
+
+    // Queue position within the assigned registrar's own queue (not global)
+    // e.g. Desk A: 1, 2, 3 — Desk B: 1, 2 — these are independent counters
     private Integer queueNumber;
 
     @Enumerated(EnumType.STRING)
     private EventRegistrationStatus status;
 
-    // Which registrar processed this person — null until card is issued
+    // Who actually issued the card at the desk (set when status → CARD_ISSUED)
+    // Usually the same as assignedRegistrar, but could differ if someone else stepped in
     @ManyToOne
     @JoinColumn(name = "processed_by_id")
     private User processedBy;
@@ -57,6 +66,9 @@ public class EventRegistration {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    public User getAssignedRegistrar() { return assignedRegistrar; }
+    public void setAssignedRegistrar(User assignedRegistrar) { this.assignedRegistrar = assignedRegistrar; }
 
     public Integer getQueueNumber() { return queueNumber; }
     public void setQueueNumber(Integer queueNumber) { this.queueNumber = queueNumber; }

@@ -25,7 +25,11 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private UserType role; // USER / ORGANIZER
+    private UserType role; // Admin / User / Registrar
+
+    // Used for Registrar role: when false, no new registrations are routed to this desk
+    // Existing registrations are not affected — only new ones stop coming in
+    private Boolean isActive = true;
 
     private LocalDateTime createdAt;
 
@@ -85,6 +89,14 @@ public class User {
 
     public void setRole(UserType role) {
         this.role = role;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public LocalDateTime getCreatedAt() {
