@@ -1,6 +1,7 @@
 package com.hupt.hupt_backend.controller;
 
 import com.hupt.hupt_backend.dto.SessionCreateRequestDto;
+import com.hupt.hupt_backend.dto.SessionDetailDto;
 import com.hupt.hupt_backend.dto.SessionResponseDto;
 import com.hupt.hupt_backend.entities.Session;
 import com.hupt.hupt_backend.dto.SessionMapper;
@@ -39,11 +40,24 @@ public class SessionController {
         );
     }
 
+    /** Lightweight summary — no qrKey. */
     @GetMapping("/{sessionId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SessionResponseDto> getSessionById(@PathVariable Long sessionId) {
         return ResponseEntity.ok(
                 SessionMapper.toDto(sessionService.getSessionById(sessionId))
+        );
+    }
+
+    /**
+     * Full detail including qrKey — Admin and Registrar only.
+     * Used by the admin panel to display the session QR code.
+     */
+    @GetMapping("/{sessionId}/detail")
+    @PreAuthorize("hasAnyRole('Admin','Registrar')")
+    public ResponseEntity<SessionDetailDto> getSessionDetail(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(
+                SessionMapper.toDetailDto(sessionService.getSessionById(sessionId))
         );
     }
 
@@ -79,8 +93,9 @@ public class SessionController {
         );
     }
 
+    /** Admin and Registrar can both enable/disable attendance at their desk. */
     @PatchMapping("/{sessionId}/attendance/enable")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin','Registrar')")
     public ResponseEntity<SessionResponseDto> enableAttendance(@PathVariable Long sessionId) {
         return ResponseEntity.ok(
                 SessionMapper.toDto(sessionService.enableAttendance(sessionId))
@@ -88,13 +103,14 @@ public class SessionController {
     }
 
     @PatchMapping("/{sessionId}/attendance/disable")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin','Registrar')")
     public ResponseEntity<SessionResponseDto> disableAttendance(@PathVariable Long sessionId) {
         return ResponseEntity.ok(
                 SessionMapper.toDto(sessionService.disableAttendance(sessionId))
         );
     }
 
+    /** QR regeneration is Admin-only to prevent registrars from invalidating live QR codes. */
     @PatchMapping("/{sessionId}/qr/regenerate")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<SessionResponseDto> regenerateQrKey(@PathVariable Long sessionId) {

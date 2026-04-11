@@ -26,7 +26,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/submit")
-    @PreAuthorize("hasAnyRole('Admin','User')")
+    @PreAuthorize("hasAnyRole('Admin','User','Registrar')")
     public ResponseEntity<AttendanceResponseDto> submitAttendance(
             @RequestBody AttendanceSubmitRequestDto request,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -40,7 +40,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/session/{sessionId}")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin','Registrar')")
     public ResponseEntity<List<AttendanceResponseDto>> getAttendanceBySession(@PathVariable Long sessionId) {
         return ResponseEntity.ok(
                 AttendanceMapper.toDtoList(attendanceService.getAttendancesBySession(sessionId))
@@ -58,7 +58,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/session/{sessionId}/count")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin','Registrar')")
     public ResponseEntity<SessionAttendanceCountResponseDto> countAttendanceBySession(@PathVariable Long sessionId) {
         SessionAttendanceCountResponseDto dto = new SessionAttendanceCountResponseDto();
         dto.setSessionId(sessionId);
